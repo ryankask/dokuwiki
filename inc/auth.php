@@ -947,6 +947,10 @@ function auth_cryptPassword($clear,$method='',$salt=null){
     if(empty($method)) $method = $conf['passcrypt'];
 
     //prepare a salt
+    if (is_null($salt) && $method == 'django-sha1') {
+       $md5_hash = md5(uniqid(rand(), true));
+       $salt = substr($md5_hash, 0, 5);
+    }
     if(is_null($salt)) $salt = md5(uniqid(rand(), true));
 
     switch(strtolower($method)){
@@ -991,6 +995,8 @@ function auth_cryptPassword($clear,$method='',$salt=null){
             return md5($clear);
         case 'sha1':
             return sha1($clear);
+        case 'django-sha1':
+            return $salt."_".sha1($salt.$clear);
         case 'ssha':
             $salt=substr($salt,0,4);
             return '{SSHA}'.base64_encode(pack("H*", sha1($clear.$salt)).$salt);
@@ -1058,6 +1064,9 @@ function auth_verifyPassword($clear,$crypt){
     }elseif($len == 34){
         $method = 'kmd5';
         $salt   = $crypt;
+    }elseif(substr($crypt,5,1) == '_'){
+        $method = 'django-sha1';
+        $salt = substr($crypt,0,5);
     }else{
         $method = 'crypt';
         $salt   = substr($crypt,0,2);
