@@ -1126,4 +1126,4 @@ function auth_getCookie(){
     return array($user,$sticky,$pass);
 }
 
-//Setup VIM: ex: et ts=2 enc=utf-8 :
+//Setup VIM: ex: et ts=2 :
